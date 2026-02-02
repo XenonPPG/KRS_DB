@@ -1,3 +1,5 @@
+github.com/XenonPPG/KRS_CONTRACTS v0.0.0-20260202200851-faa7a7824ddd h1:Zu8igtMrdqPdLzEd04aC/wlUbbtcXZcvHqoUgU39FEQ=
+github.com/XenonPPG/KRS_CONTRACTS v0.0.0-20260202200851-faa7a7824ddd/go.mod h1:wRB/VpxKfaUZjTkOGJ6bRF3kvVMzMCsRD/WUYhA4KAQ=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

@@ -1,6 +1,6 @@
 package service
 
-import desc "DB/internal/gen/db_v1"
+import desc "github.com/XenonPPG/KRS_CONTRACTS/gen/db_v1"
 
 type Server struct {
 	desc.UnimplementedDatabaseServiceServer
