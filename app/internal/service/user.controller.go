@@ -4,10 +4,13 @@ import (
 	"DB/internal/initializers"
 	"DB/internal/models"
 	"context"
+	"errors"
 
 	desc "github.com/XenonPPG/KRS_CONTRACTS/gen/db_v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
+	"gorm.io/gorm"
 )
 
 func (s *Server) CreateUser(ctx context.Context, req *desc.CreateUserRequest) (*desc.User, error) {
@@ -67,30 +70,85 @@ func (s *Server) GetUser(ctx context.Context, req *desc.GetUserRequest) (*desc.U
 }
 
 func (s *Server) UpdateUser(ctx context.Context, req *desc.UpdateUserRequest) (*desc.User, error) {
-	newUser := &models.User{
-		ID:       req.GetId(),
-		Name:     req.GetName(),
-		Password: req.GetPassword(),
+	// get old user
+	oldUser, err := s.GetUser(ctx, &desc.GetUserRequest{
+		Id: req.GetId(),
+	})
+	if err != nil {
+		return nil, err
 	}
 
-	result := initializers.DB.Save(newUser)
+	updatedUser := &models.User{
+		ID:   req.GetId(),
+		Name: req.GetName(),
+	}
 
+	// check if name is updated
+	if updatedUser.Name == oldUser.GetName() {
+		return nil, status.Errorf(codes.InvalidArgument, "new name is the same as old one")
+	}
+
+	result := initializers.DB.Model(oldUser).Updates(updatedUser)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 
 	return &desc.User{
-		Id:   newUser.ID,
-		Name: newUser.Name,
+		Id:   updatedUser.ID,
+		Name: updatedUser.Name,
 	}, nil
 }
 
-func (s *Server) DeleteUser(ctx context.Context, req *desc.DeleteUserRequest) (*desc.DeleteUserResponse, error) {
+func (s *Server) VerifyPassword(ctx context.Context, req *desc.VerifyPasswordRequest) (*desc.IsValidResponse, error) {
+	// get user
+	var user models.User
+	result := initializers.DB.First(&user, req.GetId())
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	// check hash
+	isValid := user.Password == req.GetPassword()
+	return &desc.IsValidResponse{
+		Valid: isValid,
+	}, nil
+}
+
+func (s *Server) UpdatePassword(ctx context.Context, req *desc.UpdatePasswordRequest) (*emptypb.Empty, error) {
+	// get user
+	var user models.User
+	if err := initializers.DB.First(&user, req.GetId()).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, status.Errorf(codes.NotFound, "user not found")
+		}
+		return nil, err
+	}
+
+	// check hash
+	if user.Password != req.GetOldPassword() {
+		return nil, status.Error(codes.InvalidArgument, "incorrect old password")
+	}
+
+	// check if the new password is different
+	if user.Password == req.GetNewPassword() {
+		return nil, status.Error(codes.InvalidArgument, "new password must be different")
+	}
+
+	// update
+	if err := initializers.DB.Model(&user).Update("password", req.GetNewPassword()).Error; err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to update password: %v", err)
+	}
+
+	return &emptypb.Empty{}, nil
+}
+
+func (s *Server) DeleteUser(ctx context.Context, req *desc.DeleteUserRequest) (*emptypb.Empty, error) {
 	result := initializers.DB.Delete(&models.User{}, req.GetId())
 
 	if result.Error != nil {
 		return nil, result.Error
 	}
 
-	return &desc.DeleteUserResponse{}, nil
+	return &emptypb.Empty{}, nil
 }
