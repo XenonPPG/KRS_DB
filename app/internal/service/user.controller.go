@@ -1,11 +1,10 @@
 package service
 
 import (
-	desc "DB/internal/gen/db_v1"
 	"DB/internal/initializers"
 	"DB/internal/models"
 	"context"
-	"errors"
+	desc "github.com/XenonPPG/KRS_CONTRACTS/gen/db_v1"
 )
 
 func (s *Server) CreateUser(ctx context.Context, req *desc.CreateUserRequest) (*desc.UserResponse, error) {
@@ -27,15 +26,11 @@ func (s *Server) CreateUser(ctx context.Context, req *desc.CreateUserRequest) (*
 }
 
 func (s *Server) GetUser(ctx context.Context, req *desc.GetUserRequest) (*desc.UserResponse, error) {
-	var user *models.User
+	var user models.User
 	result := initializers.DB.First(user, req.GetId())
 
 	if result.Error != nil {
 		return nil, result.Error
-	}
-
-	if user == nil {
-		return nil, errors.New("user not found")
 	}
 
 	return &desc.UserResponse{
