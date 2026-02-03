@@ -4,10 +4,13 @@ import (
 	"DB/internal/initializers"
 	"DB/internal/models"
 	"context"
+
 	desc "github.com/XenonPPG/KRS_CONTRACTS/gen/db_v1"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
-func (s *Server) CreateUser(ctx context.Context, req *desc.CreateUserRequest) (*desc.UserResponse, error) {
+func (s *Server) CreateUser(ctx context.Context, req *desc.CreateUserRequest) (*desc.User, error) {
 	user := &models.User{
 		Name:     req.GetName(),
 		Password: req.GetPassword(),
@@ -19,13 +22,37 @@ func (s *Server) CreateUser(ctx context.Context, req *desc.CreateUserRequest) (*
 		return nil, result.Error
 	}
 
-	return &desc.UserResponse{
+	return &desc.User{
 		Id:   user.ID,
 		Name: user.Name,
 	}, nil
 }
 
-func (s *Server) GetUser(ctx context.Context, req *desc.GetUserRequest) (*desc.UserResponse, error) {
+func (s *Server) GetAllUsers(ctx context.Context, req *desc.GetAllUsersRequest) (*desc.GetAllUsersResponse, error) {
+	var dbUsers []models.User
+
+	// results with pagination
+	result := initializers.DB.Limit(int(req.Limit)).Offset(int(req.Offset)).Find(&dbUsers)
+
+	if result.Error != nil {
+		return nil, status.Errorf(codes.Internal, "failed to fetch users: %v", result.Error)
+	}
+
+	protoUsers := make([]*desc.User, 0, len(dbUsers))
+
+	for _, u := range dbUsers {
+		protoUsers = append(protoUsers, &desc.User{
+			Id:   u.ID,
+			Name: u.Name,
+		})
+	}
+
+	return &desc.GetAllUsersResponse{
+		Users: protoUsers,
+	}, nil
+}
+
+func (s *Server) GetUser(ctx context.Context, req *desc.GetUserRequest) (*desc.User, error) {
 	var user models.User
 	result := initializers.DB.First(user, req.GetId())
 
@@ -33,13 +60,13 @@ func (s *Server) GetUser(ctx context.Context, req *desc.GetUserRequest) (*desc.U
 		return nil, result.Error
 	}
 
-	return &desc.UserResponse{
+	return &desc.User{
 		Id:   user.ID,
 		Name: user.Name,
 	}, nil
 }
 
-func (s *Server) UpdateUser(ctx context.Context, req *desc.UpdateUserRequest) (*desc.UserResponse, error) {
+func (s *Server) UpdateUser(ctx context.Context, req *desc.UpdateUserRequest) (*desc.User, error) {
 	newUser := &models.User{
 		ID:       req.GetId(),
 		Name:     req.GetName(),
@@ -52,7 +79,7 @@ func (s *Server) UpdateUser(ctx context.Context, req *desc.UpdateUserRequest) (*
 		return nil, result.Error
 	}
 
-	return &desc.UserResponse{
+	return &desc.User{
 		Id:   newUser.ID,
 		Name: newUser.Name,
 	}, nil

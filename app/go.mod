@@ -5,7 +5,7 @@ go 1.24.0
 toolchain go1.24.5
 
 require (
-	github.com/XenonPPG/KRS_CONTRACTS v0.0.0-20260202200851-faa7a7824ddd
+	github.com/XenonPPG/KRS_CONTRACTS v0.0.0-20260203191040-7b65d30cce53
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/gorm v1.31.1
 )
