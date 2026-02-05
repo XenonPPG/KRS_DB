@@ -1,4 +1,4 @@
-package service
+package controllers
 
 import desc "github.com/XenonPPG/KRS_CONTRACTS/gen/db_v1"
 

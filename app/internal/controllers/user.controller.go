@@ -1,12 +1,12 @@
-package service
+package controllers
 
 import (
 	"DB/internal/initializers"
-	"DB/internal/models"
 	"context"
 	"errors"
 
 	desc "github.com/XenonPPG/KRS_CONTRACTS/gen/db_v1"
+	"github.com/XenonPPG/KRS_CONTRACTS/models"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
