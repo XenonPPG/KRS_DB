@@ -1,0 +1,23 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: always
+    ports:
+      - "5432:5432"
+    env_file:
+      - config.env
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: /app
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    ports:
+      - "50051:50051"
+    restart: on-failure
+
+volumes:
+  pgdata:

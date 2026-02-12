@@ -17,6 +17,9 @@ go.work
 # Dependency directories
 vendor/
 
+# Environment files
+.env
+
 # IDE - JetBrains
 .idea/
 
