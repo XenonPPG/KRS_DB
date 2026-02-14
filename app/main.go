@@ -3,9 +3,22 @@ package main
 import (
 	"DB/internal/controllers"
 	"DB/internal/initializers"
+	"context"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
+
+	"golang.org/x/sync/errgroup"
 )
 
 func main() {
+	// error group
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	g, ctx := errgroup.WithContext(ctx)
+
 	// config
 	config, err := initializers.LoadConfig("./config.env")
 	if err != nil {
@@ -20,10 +33,12 @@ func main() {
 
 	// gRPC
 	server := &controllers.Server{}
-	err = initializers.ConnectGRPC(config, server.RegisterAllServices())
-	if err != nil {
-		panic(err)
-	}
+	g.Go(func() error {
+		return initializers.ConnectGRPC(config, server.RegisterAllServices())
+	})
 
-	select {}
+	// handle error
+	if err := g.Wait(); err != nil {
+		log.Fatal("Program terminated: " + err.Error())
+	}
 }
