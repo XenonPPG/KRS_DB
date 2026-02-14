@@ -9,7 +9,7 @@ func main() {
 	// config
 	config, err := initializers.LoadConfig("./config.env")
 	if err != nil {
-		return
+		panic(err)
 	}
 
 	// postgres
@@ -19,8 +19,11 @@ func main() {
 	}
 
 	// gRPC
-	err = initializers.ConnectGRPC(config, &controllers.Server{})
+	server := &controllers.Server{}
+	err = initializers.ConnectGRPC(config, server.RegisterAllServices())
 	if err != nil {
 		panic(err)
 	}
+
+	select {}
 }

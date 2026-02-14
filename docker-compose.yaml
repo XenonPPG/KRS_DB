@@ -1,6 +1,7 @@
 services:
   db:
     image: postgres:16-alpine
+    container_name: krs_postgres
     restart: always
     ports:
       - "5432:5432"
@@ -10,6 +11,7 @@ services:
       - pgdata:/var/lib/postgresql/data
 
   app:
+    container_name: krs_app
     build:
       context: /app
       dockerfile: Dockerfile

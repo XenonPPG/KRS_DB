@@ -5,11 +5,10 @@ import (
 	"log"
 	"net"
 
-	desc "github.com/XenonPPG/KRS_CONTRACTS/gen/db_v1"
 	"google.golang.org/grpc"
 )
 
-func ConnectGRPC(config models.Config, server desc.DatabaseServiceServer) error {
+func ConnectGRPC(config models.Config, registerFunc func(server *grpc.Server)) error {
 	lis, err := net.Listen(config.GrpcNetwork, ":"+config.GrpcPort)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
@@ -17,7 +16,7 @@ func ConnectGRPC(config models.Config, server desc.DatabaseServiceServer) error 
 
 	s := grpc.NewServer()
 
-	desc.RegisterDatabaseServiceServer(s, server)
+	registerFunc(s)
 
 	log.Printf("Server listening at %v", lis.Addr())
 

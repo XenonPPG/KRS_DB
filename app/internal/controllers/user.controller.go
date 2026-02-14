@@ -5,7 +5,7 @@ import (
 	"context"
 	"errors"
 
-	desc "github.com/XenonPPG/KRS_CONTRACTS/gen/db_v1"
+	desc "github.com/XenonPPG/KRS_CONTRACTS/gen/user_v1"
 	"github.com/XenonPPG/KRS_CONTRACTS/models"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -41,7 +41,7 @@ func (s *Server) GetAllUsers(ctx context.Context, req *desc.GetAllUsersRequest) 
 		return nil, status.Errorf(codes.Internal, "failed to fetch users: %v", result.Error)
 	}
 
-	protoUsers := make([]*desc.User, 0, len(dbUsers))
+	protoUsers := make([]*desc.User, len(dbUsers))
 
 	for _, u := range dbUsers {
 		protoUsers = append(protoUsers, &desc.User{
@@ -83,7 +83,7 @@ func (s *Server) UpdateUser(ctx context.Context, req *desc.UpdateUserRequest) (*
 		Name: req.GetName(),
 	}
 
-	// check if name is updated
+	// check if the name is updated
 	if updatedUser.Name == oldUser.GetName() {
 		return nil, status.Errorf(codes.InvalidArgument, "new name is the same as old one")
 	}
