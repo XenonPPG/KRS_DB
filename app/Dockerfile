@@ -23,8 +23,6 @@ WORKDIR /root/
 
 # Copy executable from builder
 COPY --from=builder /main .
-# Copy configs if needed:
-# COPY --from=builder /app/config ./config
 
 # Expose gRPC port
 EXPOSE 50051
