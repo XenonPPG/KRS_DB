@@ -7,4 +7,4 @@ upload-image:
 	docker build -t xenonppg/krs_db:latest ./app
 	docker push xenonppg/krs_db:latest
 
-.PHONY: update-deps
+.PHONY: update-deps, upload-image
