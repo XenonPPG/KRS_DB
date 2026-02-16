@@ -15,7 +15,7 @@ import (
 
 func (s *Server) CreateUser(ctx context.Context, req *desc.CreateUserRequest) (*desc.User, error) {
 	user := &models.User{
-		Name:     req.GetName(),
+		Login:    req.GetLogin(),
 		Password: req.GetPassword(),
 	}
 
@@ -26,8 +26,8 @@ func (s *Server) CreateUser(ctx context.Context, req *desc.CreateUserRequest) (*
 	}
 
 	return &desc.User{
-		Id:   user.ID,
-		Name: user.Name,
+		Id:    user.ID,
+		Login: user.Login,
 	}, nil
 }
 
@@ -45,8 +45,8 @@ func (s *Server) GetAllUsers(ctx context.Context, req *desc.GetAllUsersRequest) 
 
 	for _, u := range dbUsers {
 		protoUsers = append(protoUsers, &desc.User{
-			Id:   u.ID,
-			Name: u.Name,
+			Id:    u.ID,
+			Login: u.Login,
 		})
 	}
 
@@ -64,8 +64,8 @@ func (s *Server) GetUser(ctx context.Context, req *desc.GetUserRequest) (*desc.U
 	}
 
 	return &desc.User{
-		Id:   user.ID,
-		Name: user.Name,
+		Id:    user.ID,
+		Login: user.Login,
 	}, nil
 }
 
@@ -79,13 +79,13 @@ func (s *Server) UpdateUser(ctx context.Context, req *desc.UpdateUserRequest) (*
 	}
 
 	updatedUser := &models.User{
-		ID:   req.GetId(),
-		Name: req.GetName(),
+		ID:    req.GetId(),
+		Login: req.GetLogin(),
 	}
 
-	// check if the name is updated
-	if updatedUser.Name == oldUser.GetName() {
-		return nil, status.Errorf(codes.InvalidArgument, "new name is the same as old one")
+	// check if the login is updated
+	if updatedUser.Login == oldUser.GetLogin() {
+		return nil, status.Errorf(codes.InvalidArgument, "new login is the same as old one")
 	}
 
 	result := initializers.DB.Model(oldUser).Updates(updatedUser)
@@ -94,8 +94,8 @@ func (s *Server) UpdateUser(ctx context.Context, req *desc.UpdateUserRequest) (*
 	}
 
 	return &desc.User{
-		Id:   updatedUser.ID,
-		Name: updatedUser.Name,
+		Id:    updatedUser.ID,
+		Login: updatedUser.Login,
 	}, nil
 }
 
