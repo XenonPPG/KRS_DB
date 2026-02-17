@@ -7,6 +7,7 @@ import (
 
 	desc "github.com/XenonPPG/KRS_CONTRACTS/gen/user_v1"
 	"github.com/XenonPPG/KRS_CONTRACTS/models"
+	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -28,7 +29,7 @@ func (s *Server) CreateUser(ctx context.Context, req *desc.CreateUserRequest) (*
 	result := initializers.DB.Create(user)
 
 	if result.Error != nil {
-		return nil, result.Error
+		return nil, status.Errorf(codes.Internal, "failed to create user: %v", result.Error)
 	}
 
 	return &desc.User{
@@ -68,10 +69,10 @@ func (s *Server) GetUser(ctx context.Context, req *desc.GetUserRequest) (*desc.U
 	result := initializers.DB.First(&user, req.GetId())
 
 	if result.Error != nil {
-		return nil, result.Error
+		return nil, status.Errorf(codes.NotFound, "user not found")
 	}
 
-	colorTheme := desc.ColorTheme(user.ColorTheme)
+	colorTheme := user.ColorTheme
 	return &desc.User{
 		Id:         user.ID,
 		Login:      user.Login,
@@ -84,8 +85,8 @@ func (s *Server) UpdateUser(ctx context.Context, req *desc.UpdateUserRequest) (*
 	oldUser, err := s.GetUser(ctx, &desc.GetUserRequest{
 		Id: req.GetId(),
 	})
-	if err != nil {
-		return nil, err
+	if err != nil || oldUser == nil {
+		return nil, status.Errorf(codes.NotFound, "user not found")
 	}
 
 	updatedUser := &models.User{
@@ -94,14 +95,17 @@ func (s *Server) UpdateUser(ctx context.Context, req *desc.UpdateUserRequest) (*
 		ColorTheme: req.GetColorTheme(),
 	}
 
-	// check if the login is updated
-	if updatedUser.Login == oldUser.GetLogin() {
-		return nil, status.Errorf(codes.InvalidArgument, "new login is the same as old one")
+	// check if something was updated
+	anythingUpdated := oldUser.Login != updatedUser.Login
+	anythingUpdated = anythingUpdated || oldUser.ColorTheme != &updatedUser.ColorTheme
+	anythingUpdated = anythingUpdated || oldUser.Role != &updatedUser.Role
+	if !anythingUpdated {
+		return nil, status.Errorf(codes.InvalidArgument, "nothing to update")
 	}
 
 	result := initializers.DB.Model(oldUser).Updates(updatedUser)
 	if result.Error != nil {
-		return nil, result.Error
+		return nil, status.Errorf(codes.Internal, "failed to update user: %v", result.Error)
 	}
 
 	return &desc.User{
@@ -111,19 +115,26 @@ func (s *Server) UpdateUser(ctx context.Context, req *desc.UpdateUserRequest) (*
 	}, nil
 }
 
-func (s *Server) VerifyPassword(ctx context.Context, req *desc.VerifyPasswordRequest) (*desc.IsValidResponse, error) {
-	// get user
+func (s *Server) Login(ctx context.Context, req *desc.LoginRequest) (*desc.User, error) {
+	// try to find the user
 	var user models.User
-	result := initializers.DB.First(&user, req.GetId())
-
+	result := initializers.DB.First(&user, "login = ?", req.GetLogin())
 	if result.Error != nil {
-		return nil, result.Error
+		return nil, status.Errorf(codes.NotFound, "user not found")
 	}
 
-	// check hash
-	isValid := user.Password == req.GetPassword()
-	return &desc.IsValidResponse{
-		Valid: isValid,
+	// check password
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.GetPassword()))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "invalid password")
+	}
+
+	// return user
+	return &desc.User{
+		Id:         user.ID,
+		Login:      user.Login,
+		Role:       &user.Role,
+		ColorTheme: &user.ColorTheme,
 	}, nil
 }
 
@@ -135,11 +146,6 @@ func (s *Server) UpdatePassword(ctx context.Context, req *desc.UpdatePasswordReq
 			return nil, status.Errorf(codes.NotFound, "user not found")
 		}
 		return nil, err
-	}
-
-	// check hash
-	if user.Password != req.GetOldPassword() {
-		return nil, status.Error(codes.InvalidArgument, "incorrect old password")
 	}
 
 	// check if the new password is different
@@ -159,7 +165,7 @@ func (s *Server) DeleteUser(ctx context.Context, req *desc.DeleteUserRequest) (*
 	result := initializers.DB.Delete(&models.User{}, req.GetId())
 
 	if result.Error != nil {
-		return nil, result.Error
+		return nil, status.Errorf(codes.Internal, "failed to delete user: %v", result.Error)
 	}
 
 	return &emptypb.Empty{}, nil

@@ -5,7 +5,7 @@ go 1.24.0
 toolchain go1.24.5
 
 require (
-	github.com/XenonPPG/KRS_CONTRACTS v0.0.0-20260217183112-5d23588bd77f
+	github.com/XenonPPG/KRS_CONTRACTS v0.0.0-20260217193241-b4f9a7960136
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	golang.org/x/sync v0.18.0
 	google.golang.org/grpc v1.78.0
