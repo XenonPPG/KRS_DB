@@ -14,6 +14,11 @@ import (
 )
 
 func (s *Server) CreateUser(ctx context.Context, req *desc.CreateUserRequest) (*desc.User, error) {
+	_, ok := desc.ColorTheme_name[int32(req.GetColorTheme())]
+	if !ok {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid color theme")
+	}
+
 	user := &models.User{
 		Login:      req.GetLogin(),
 		Password:   req.GetPassword(),
@@ -29,7 +34,7 @@ func (s *Server) CreateUser(ctx context.Context, req *desc.CreateUserRequest) (*
 	return &desc.User{
 		Id:         user.ID,
 		Login:      user.Login,
-		ColorTheme: user.ColorTheme,
+		ColorTheme: &user.ColorTheme,
 	}, nil
 }
 
@@ -47,8 +52,9 @@ func (s *Server) GetAllUsers(ctx context.Context, req *desc.GetAllUsersRequest) 
 
 	for _, u := range dbUsers {
 		protoUsers = append(protoUsers, &desc.User{
-			Id:    u.ID,
-			Login: u.Login,
+			Id:         u.ID,
+			Login:      u.Login,
+			ColorTheme: &u.ColorTheme,
 		})
 	}
 
@@ -65,10 +71,11 @@ func (s *Server) GetUser(ctx context.Context, req *desc.GetUserRequest) (*desc.U
 		return nil, result.Error
 	}
 
+	colorTheme := desc.ColorTheme(user.ColorTheme)
 	return &desc.User{
 		Id:         user.ID,
 		Login:      user.Login,
-		ColorTheme: user.ColorTheme,
+		ColorTheme: &colorTheme,
 	}, nil
 }
 
@@ -98,8 +105,9 @@ func (s *Server) UpdateUser(ctx context.Context, req *desc.UpdateUserRequest) (*
 	}
 
 	return &desc.User{
-		Id:    updatedUser.ID,
-		Login: updatedUser.Login,
+		Id:         updatedUser.ID,
+		Login:      updatedUser.Login,
+		ColorTheme: &updatedUser.ColorTheme,
 	}, nil
 }
 
