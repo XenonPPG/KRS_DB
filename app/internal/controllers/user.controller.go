@@ -59,7 +59,7 @@ func (s *Server) GetAllUsers(ctx context.Context, req *desc.GetAllUsersRequest) 
 
 func (s *Server) GetUser(ctx context.Context, req *desc.GetUserRequest) (*desc.User, error) {
 	var user models.User
-	result := initializers.DB.First(user, req.GetId())
+	result := initializers.DB.First(&user, req.GetId())
 
 	if result.Error != nil {
 		return nil, result.Error
