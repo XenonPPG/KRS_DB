@@ -27,8 +27,9 @@ func (s *Server) CreateUser(ctx context.Context, req *desc.CreateUserRequest) (*
 	}
 
 	return &desc.User{
-		Id:    user.ID,
-		Login: user.Login,
+		Id:         user.ID,
+		Login:      user.Login,
+		ColorTheme: user.ColorTheme,
 	}, nil
 }
 
@@ -65,8 +66,9 @@ func (s *Server) GetUser(ctx context.Context, req *desc.GetUserRequest) (*desc.U
 	}
 
 	return &desc.User{
-		Id:    user.ID,
-		Login: user.Login,
+		Id:         user.ID,
+		Login:      user.Login,
+		ColorTheme: user.ColorTheme,
 	}, nil
 }
 
@@ -80,8 +82,9 @@ func (s *Server) UpdateUser(ctx context.Context, req *desc.UpdateUserRequest) (*
 	}
 
 	updatedUser := &models.User{
-		ID:    req.GetId(),
-		Login: req.GetLogin(),
+		ID:         req.GetId(),
+		Login:      req.GetLogin(),
+		ColorTheme: req.GetColorTheme(),
 	}
 
 	// check if the login is updated
