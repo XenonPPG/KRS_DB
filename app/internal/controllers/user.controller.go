@@ -48,7 +48,7 @@ func (s *Server) GetAllUsers(ctx context.Context, req *desc.GetAllUsersRequest) 
 		return nil, status.Errorf(codes.Internal, "failed to fetch users: %v", result.Error)
 	}
 
-	protoUsers := make([]*desc.User, len(dbUsers))
+	protoUsers := make([]*desc.User, 0, len(dbUsers))
 
 	for _, u := range dbUsers {
 		protoUsers = append(protoUsers, &desc.User{
