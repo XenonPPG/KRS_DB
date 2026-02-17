@@ -15,8 +15,9 @@ import (
 
 func (s *Server) CreateUser(ctx context.Context, req *desc.CreateUserRequest) (*desc.User, error) {
 	user := &models.User{
-		Login:    req.GetLogin(),
-		Password: req.GetPassword(),
+		Login:      req.GetLogin(),
+		Password:   req.GetPassword(),
+		ColorTheme: req.GetColorTheme(),
 	}
 
 	result := initializers.DB.Create(user)
