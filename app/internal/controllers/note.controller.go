@@ -28,6 +28,7 @@ func (s *Server) CreateNote(ctx context.Context, req *desc.CreateNoteRequest) (*
 		Id:      note.ID,
 		Title:   note.Title,
 		Content: note.Content,
+		UserID:  note.UserID,
 	}, nil
 }
 
@@ -49,6 +50,7 @@ func (s *Server) GetAllNotes(ctx context.Context, req *desc.GetAllNotesRequest) 
 			Id:      n.ID,
 			Title:   n.Title,
 			Content: n.Content,
+			UserID:  n.UserID,
 		})
 	}
 
@@ -70,6 +72,7 @@ func (s *Server) GetNote(ctx context.Context, req *desc.GetNoteRequest) (*desc.N
 		Id:      note.ID,
 		Title:   note.Title,
 		Content: note.Content,
+		UserID:  note.UserID,
 	}, nil
 }
 
@@ -86,16 +89,21 @@ func (s *Server) UpdateNote(ctx context.Context, req *desc.UpdateNoteRequest) (*
 
 	// update
 	newNote := &models.Note{
-		ID:      req.GetId(),
+		ID:      oldNote.Id,
 		Title:   req.GetTitle(),
 		Content: req.GetContent(),
+		UserID:  oldNote.UserID,
 	}
-	initializers.DB.Model(oldNote).Updates(newNote)
+	result := initializers.DB.Model(&models.Note{ID: req.GetId()}).Updates(newNote)
+	if result.Error != nil {
+		return nil, status.Errorf(codes.Internal, "failed to update note: %v", result.Error)
+	}
 
 	return &desc.Note{
 		Id:      newNote.ID,
 		Title:   newNote.Title,
 		Content: newNote.Content,
+		UserID:  newNote.UserID,
 	}, nil
 }
 

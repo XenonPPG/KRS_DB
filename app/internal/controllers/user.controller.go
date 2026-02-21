@@ -103,7 +103,7 @@ func (s *Server) UpdateUser(ctx context.Context, req *desc.UpdateUserRequest) (*
 		return nil, status.Errorf(codes.InvalidArgument, "nothing to update")
 	}
 
-	result := initializers.DB.Model(oldUser).Updates(updatedUser)
+	result := initializers.DB.Model(&models.User{ID: req.GetId()}).Updates(updatedUser)
 	if result.Error != nil {
 		return nil, status.Errorf(codes.Internal, "failed to update user: %v", result.Error)
 	}
