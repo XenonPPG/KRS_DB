@@ -43,7 +43,7 @@ func (s *Server) GetAllNotes(ctx context.Context, req *desc.GetAllNotesRequest) 
 
 	notesAmount := int32(len(notes))
 	// format models.Note to proto.Note
-	protoNotes := make([]*desc.Note, notesAmount)
+	protoNotes := make([]*desc.Note, 0, notesAmount)
 	for _, n := range notes {
 		protoNotes = append(protoNotes, &desc.Note{
 			Id:      n.ID,
