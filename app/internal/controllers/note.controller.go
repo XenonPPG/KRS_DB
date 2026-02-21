@@ -80,15 +80,15 @@ func (s *Server) UpdateNote(ctx context.Context, req *desc.UpdateNoteRequest) (*
 	}
 
 	// check if something was updated
-	if oldNote.Title == req.GetNewTitle() && oldNote.Content == req.GetNewContent() {
+	if oldNote.Title == req.GetTitle() && oldNote.Content == req.GetContent() {
 		return nil, status.Errorf(codes.InvalidArgument, "nothing to update")
 	}
 
 	// update
 	newNote := &models.Note{
 		ID:      req.GetId(),
-		Title:   req.GetNewTitle(),
-		Content: req.GetNewContent(),
+		Title:   req.GetTitle(),
+		Content: req.GetContent(),
 	}
 	initializers.DB.Model(oldNote).Updates(newNote)
 
