@@ -68,6 +68,11 @@ func (s *Server) GetNote(ctx context.Context, req *desc.GetNoteRequest) (*desc.N
 		return nil, result.Error
 	}
 
+	// check if note is owned by user
+	if note.UserID != req.GetUserID() {
+		return nil, status.Errorf(codes.PermissionDenied, "note is not owned by user")
+	}
+
 	return &desc.Note{
 		Id:      note.ID,
 		Title:   note.Title,
@@ -80,6 +85,14 @@ func (s *Server) UpdateNote(ctx context.Context, req *desc.UpdateNoteRequest) (*
 	oldNote, err := s.GetNote(ctx, &desc.GetNoteRequest{Id: req.GetId()})
 	if err != nil {
 		return nil, err
+	}
+	if oldNote == nil {
+		return nil, status.Errorf(codes.NotFound, "note not found")
+	}
+
+	// check if note is owned by user
+	if oldNote.UserID != req.GetUserID() {
+		return nil, status.Errorf(codes.PermissionDenied, "note is not owned by user")
 	}
 
 	// check if something was updated
