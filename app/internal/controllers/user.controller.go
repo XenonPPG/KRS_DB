@@ -23,6 +23,7 @@ func (s *Server) CreateUser(ctx context.Context, req *desc.CreateUserRequest) (*
 	user := &models.User{
 		Login:      req.GetLogin(),
 		Password:   req.GetPassword(),
+		Role:       req.GetRole(),
 		ColorTheme: req.GetColorTheme(),
 	}
 
@@ -35,6 +36,7 @@ func (s *Server) CreateUser(ctx context.Context, req *desc.CreateUserRequest) (*
 	return &desc.User{
 		Id:         user.ID,
 		Login:      user.Login,
+		Role:       &user.Role,
 		ColorTheme: &user.ColorTheme,
 	}, nil
 }
@@ -55,6 +57,7 @@ func (s *Server) GetAllUsers(ctx context.Context, req *desc.GetAllUsersRequest) 
 		protoUsers = append(protoUsers, &desc.User{
 			Id:         u.ID,
 			Login:      u.Login,
+			Role:       &u.Role,
 			ColorTheme: &u.ColorTheme,
 		})
 	}
@@ -76,6 +79,7 @@ func (s *Server) GetUser(ctx context.Context, req *desc.GetUserRequest) (*desc.U
 	return &desc.User{
 		Id:         user.ID,
 		Login:      user.Login,
+		Role:       &user.Role,
 		ColorTheme: &colorTheme,
 	}, nil
 }
@@ -92,6 +96,7 @@ func (s *Server) UpdateUser(ctx context.Context, req *desc.UpdateUserRequest) (*
 	updatedUser := &models.User{
 		ID:         req.GetId(),
 		Login:      req.GetLogin(),
+		Role:       req.GetRole(),
 		ColorTheme: req.GetColorTheme(),
 	}
 
@@ -111,6 +116,7 @@ func (s *Server) UpdateUser(ctx context.Context, req *desc.UpdateUserRequest) (*
 	return &desc.User{
 		Id:         updatedUser.ID,
 		Login:      updatedUser.Login,
+		Role:       &updatedUser.Role,
 		ColorTheme: &updatedUser.ColorTheme,
 	}, nil
 }
@@ -166,6 +172,10 @@ func (s *Server) DeleteUser(ctx context.Context, req *desc.DeleteUserRequest) (*
 
 	if result.Error != nil {
 		return nil, status.Errorf(codes.Internal, "failed to delete user: %v", result.Error)
+	}
+
+	if result.RowsAffected == 0 {
+		return nil, status.Errorf(codes.NotFound, "user with id %d not found", req.GetId())
 	}
 
 	return &emptypb.Empty{}, nil

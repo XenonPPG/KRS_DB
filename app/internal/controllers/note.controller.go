@@ -36,7 +36,11 @@ func (s *Server) GetAllNotes(ctx context.Context, req *desc.GetAllNotesRequest) 
 	var notes []models.Note
 
 	// results with pagination
-	result := initializers.DB.Limit(int(req.Limit)).Offset(int(req.Offset)).Find(&notes)
+	result := initializers.DB.
+		Where("user_id = ?", req.GetUserID()).
+		Limit(int(req.Limit)).
+		Offset(int(req.Offset)).
+		Find(&notes)
 
 	if result.Error != nil {
 		return nil, result.Error
@@ -82,7 +86,10 @@ func (s *Server) GetNote(ctx context.Context, req *desc.GetNoteRequest) (*desc.N
 }
 
 func (s *Server) UpdateNote(ctx context.Context, req *desc.UpdateNoteRequest) (*desc.Note, error) {
-	oldNote, err := s.GetNote(ctx, &desc.GetNoteRequest{Id: req.GetId()})
+	oldNote, err := s.GetNote(ctx, &desc.GetNoteRequest{
+		Id:     req.GetId(),
+		UserID: req.GetUserID(),
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -121,6 +128,22 @@ func (s *Server) UpdateNote(ctx context.Context, req *desc.UpdateNoteRequest) (*
 }
 
 func (s *Server) DeleteNote(ctx context.Context, req *desc.DeleteNoteRequest) (*emptypb.Empty, error) {
+	// check if note is owned by user
+	note, err := s.GetNote(ctx, &desc.GetNoteRequest{
+		Id:     req.GetId(),
+		UserID: req.GetUserID(),
+	})
+	if err != nil {
+		return nil, err
+	}
+	if note == nil {
+		return nil, status.Errorf(codes.NotFound, "note not found")
+	}
+
+	if note.UserID != req.GetUserID() {
+		return nil, status.Errorf(codes.PermissionDenied, "note is not owned by user")
+	}
+
 	result := initializers.DB.Delete(&models.Note{}, req.GetId())
 
 	if result.Error != nil {
