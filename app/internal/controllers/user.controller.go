@@ -168,6 +168,21 @@ func (s *Server) UpdatePassword(ctx context.Context, req *desc.UpdatePasswordReq
 }
 
 func (s *Server) DeleteUser(ctx context.Context, req *desc.DeleteUserRequest) (*emptypb.Empty, error) {
+	// get user
+	user, err := s.GetUser(ctx, &desc.GetUserRequest{Id: req.GetId()})
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return nil, status.Errorf(codes.NotFound, "user not found")
+	}
+
+	// check if not admin
+	if user.GetRole() == desc.UserRole_ADMIN {
+		return nil, status.Errorf(codes.PermissionDenied, "cannot delete admin")
+	}
+
+	// delete
 	result := initializers.DB.Delete(&models.User{}, req.GetId())
 
 	if result.Error != nil {
