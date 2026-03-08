@@ -5,7 +5,7 @@ go 1.24.0
 toolchain go1.24.5
 
 require (
-	github.com/XenonPPG/KRS_CONTRACTS v0.0.0-20260223122829-6cb2c64bd259
+	github.com/XenonPPG/KRS_CONTRACTS v0.0.0-20260308202902-af81ff200c22
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	golang.org/x/crypto v0.44.0
 	golang.org/x/sync v0.18.0
@@ -26,6 +26,7 @@ require (
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/rogpeppe/go-internal v1.14.1 // indirect
+	github.com/srikrsna/protoc-gen-gotag v1.0.2 // indirect
 	golang.org/x/net v0.47.0 // indirect
 	golang.org/x/sys v0.38.0 // indirect
 	golang.org/x/text v0.31.0 // indirect
