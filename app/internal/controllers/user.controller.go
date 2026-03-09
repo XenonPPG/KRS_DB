@@ -51,6 +51,13 @@ func (s *Server) GetAllUsers(ctx context.Context, req *desc.GetAllUsersRequest) 
 		return nil, status.Errorf(codes.Internal, "failed to fetch users: %v", result.Error)
 	}
 
+	// total user count
+	var usersAmount int64
+	result = initializers.DB.Model(&models.User{}).Count(&usersAmount)
+	if result.Error != nil {
+		return nil, status.Errorf(codes.Internal, "failed to fetch users: %v", result.Error)
+	}
+
 	protoUsers := make([]*desc.User, 0, len(dbUsers))
 
 	for _, u := range dbUsers {
@@ -63,7 +70,8 @@ func (s *Server) GetAllUsers(ctx context.Context, req *desc.GetAllUsersRequest) 
 	}
 
 	return &desc.GetAllUsersResponse{
-		Users: protoUsers,
+		Users:      protoUsers,
+		TotalCount: int32(usersAmount),
 	}, nil
 }
 

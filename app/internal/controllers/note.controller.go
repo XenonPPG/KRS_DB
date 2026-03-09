@@ -45,10 +45,16 @@ func (s *Server) GetAllNotes(ctx context.Context, req *desc.GetAllNotesRequest) 
 		Find(&notes)
 
 	if result.Error != nil {
+		return nil, status.Errorf(codes.Internal, "failed to fetch notes: %v", result.Error)
+	}
+
+	// total count of user's notes
+	var notesAmount int64
+	result = initializers.DB.Model(&models.Note{}).Where("user_id = ?", req.GetUserID()).Count(&notesAmount)
+	if result.Error != nil {
 		return nil, result.Error
 	}
 
-	notesAmount := int32(len(notes))
 	// format models.Note to proto.Note
 	protoNotes := make([]*desc.Note, 0, notesAmount)
 	for _, n := range notes {
@@ -63,7 +69,7 @@ func (s *Server) GetAllNotes(ctx context.Context, req *desc.GetAllNotesRequest) 
 
 	return &desc.GetAllNotesResponse{
 		Notes:      protoNotes,
-		TotalCount: notesAmount,
+		TotalCount: int32(notesAmount),
 	}, nil
 }
 
