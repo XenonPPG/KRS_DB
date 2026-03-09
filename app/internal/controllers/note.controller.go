@@ -9,6 +9,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func (s *Server) CreateNote(ctx context.Context, req *desc.CreateNoteRequest) (*desc.Note, error) {
@@ -25,10 +26,11 @@ func (s *Server) CreateNote(ctx context.Context, req *desc.CreateNoteRequest) (*
 	}
 
 	return &desc.Note{
-		Id:      note.ID,
-		Title:   note.Title,
-		Content: note.Content,
-		UserID:  note.UserID,
+		Id:        note.ID,
+		Title:     note.Title,
+		Content:   note.Content,
+		UserID:    note.UserID,
+		CreatedAt: timestamppb.New(note.CreatedAt),
 	}, nil
 }
 
@@ -51,10 +53,11 @@ func (s *Server) GetAllNotes(ctx context.Context, req *desc.GetAllNotesRequest) 
 	protoNotes := make([]*desc.Note, 0, notesAmount)
 	for _, n := range notes {
 		protoNotes = append(protoNotes, &desc.Note{
-			Id:      n.ID,
-			Title:   n.Title,
-			Content: n.Content,
-			UserID:  n.UserID,
+			Id:        n.ID,
+			Title:     n.Title,
+			Content:   n.Content,
+			UserID:    n.UserID,
+			CreatedAt: timestamppb.New(n.CreatedAt),
 		})
 	}
 
@@ -78,10 +81,11 @@ func (s *Server) GetNote(ctx context.Context, req *desc.GetNoteRequest) (*desc.N
 	}
 
 	return &desc.Note{
-		Id:      note.ID,
-		Title:   note.Title,
-		Content: note.Content,
-		UserID:  note.UserID,
+		Id:        note.ID,
+		Title:     note.Title,
+		Content:   note.Content,
+		UserID:    note.UserID,
+		CreatedAt: timestamppb.New(note.CreatedAt),
 	}, nil
 }
 
@@ -109,10 +113,11 @@ func (s *Server) UpdateNote(ctx context.Context, req *desc.UpdateNoteRequest) (*
 
 	// update
 	newNote := &models.Note{
-		ID:      oldNote.Id,
-		Title:   req.GetTitle(),
-		Content: req.GetContent(),
-		UserID:  oldNote.UserID,
+		ID:        oldNote.Id,
+		Title:     req.GetTitle(),
+		Content:   req.GetContent(),
+		UserID:    oldNote.UserID,
+		CreatedAt: oldNote.CreatedAt.AsTime(),
 	}
 	result := initializers.DB.Model(&models.Note{ID: req.GetId()}).Updates(newNote)
 	if result.Error != nil {
@@ -120,10 +125,11 @@ func (s *Server) UpdateNote(ctx context.Context, req *desc.UpdateNoteRequest) (*
 	}
 
 	return &desc.Note{
-		Id:      newNote.ID,
-		Title:   newNote.Title,
-		Content: newNote.Content,
-		UserID:  newNote.UserID,
+		Id:        newNote.ID,
+		Title:     newNote.Title,
+		Content:   newNote.Content,
+		UserID:    newNote.UserID,
+		CreatedAt: timestamppb.New(newNote.CreatedAt),
 	}, nil
 }
 
