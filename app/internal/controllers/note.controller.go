@@ -31,6 +31,7 @@ func (s *Server) CreateNote(ctx context.Context, req *desc.CreateNoteRequest) (*
 		Content:   note.Content,
 		UserID:    note.UserID,
 		CreatedAt: timestamppb.New(note.CreatedAt),
+		UpdatedAt: timestamppb.New(note.UpdatedAt),
 	}, nil
 }
 
@@ -64,6 +65,7 @@ func (s *Server) GetAllNotes(ctx context.Context, req *desc.GetAllNotesRequest) 
 			Content:   n.Content,
 			UserID:    n.UserID,
 			CreatedAt: timestamppb.New(n.CreatedAt),
+			UpdatedAt: timestamppb.New(n.UpdatedAt),
 		})
 	}
 
@@ -92,6 +94,7 @@ func (s *Server) GetNote(ctx context.Context, req *desc.GetNoteRequest) (*desc.N
 		Content:   note.Content,
 		UserID:    note.UserID,
 		CreatedAt: timestamppb.New(note.CreatedAt),
+		UpdatedAt: timestamppb.New(note.UpdatedAt),
 	}, nil
 }
 
@@ -119,11 +122,9 @@ func (s *Server) UpdateNote(ctx context.Context, req *desc.UpdateNoteRequest) (*
 
 	// update
 	newNote := &models.Note{
-		ID:        oldNote.Id,
-		Title:     req.GetTitle(),
-		Content:   req.GetContent(),
-		UserID:    oldNote.UserID,
-		CreatedAt: oldNote.CreatedAt.AsTime(),
+		Title:   req.GetTitle(),
+		Content: req.GetContent(),
+		UserID:  oldNote.UserID,
 	}
 	result := initializers.DB.Model(&models.Note{ID: req.GetId()}).Updates(newNote)
 	if result.Error != nil {
@@ -136,6 +137,7 @@ func (s *Server) UpdateNote(ctx context.Context, req *desc.UpdateNoteRequest) (*
 		Content:   newNote.Content,
 		UserID:    newNote.UserID,
 		CreatedAt: timestamppb.New(newNote.CreatedAt),
+		UpdatedAt: timestamppb.New(newNote.UpdatedAt),
 	}, nil
 }
 

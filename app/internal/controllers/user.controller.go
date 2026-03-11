@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/gorm"
 )
 
@@ -38,6 +39,8 @@ func (s *Server) CreateUser(ctx context.Context, req *desc.CreateUserRequest) (*
 		Login:      user.Login,
 		Role:       &user.Role,
 		ColorTheme: &user.ColorTheme,
+		CreatedAt:  timestamppb.New(user.CreatedAt),
+		UpdatedAt:  timestamppb.New(user.UpdatedAt),
 	}, nil
 }
 
@@ -66,6 +69,8 @@ func (s *Server) GetAllUsers(ctx context.Context, req *desc.GetAllUsersRequest) 
 			Login:      u.Login,
 			Role:       &u.Role,
 			ColorTheme: &u.ColorTheme,
+			CreatedAt:  timestamppb.New(u.CreatedAt),
+			UpdatedAt:  timestamppb.New(u.UpdatedAt),
 		})
 	}
 
@@ -89,6 +94,8 @@ func (s *Server) GetUser(ctx context.Context, req *desc.GetUserRequest) (*desc.U
 		Login:      user.Login,
 		Role:       &user.Role,
 		ColorTheme: &colorTheme,
+		CreatedAt:  timestamppb.New(user.CreatedAt),
+		UpdatedAt:  timestamppb.New(user.UpdatedAt),
 	}, nil
 }
 
@@ -102,7 +109,6 @@ func (s *Server) UpdateUser(ctx context.Context, req *desc.UpdateUserRequest) (*
 	}
 
 	updatedUser := &models.User{
-		ID:         req.GetId(),
 		Login:      req.GetLogin(),
 		Role:       req.GetRole(),
 		ColorTheme: req.GetColorTheme(),
@@ -126,6 +132,8 @@ func (s *Server) UpdateUser(ctx context.Context, req *desc.UpdateUserRequest) (*
 		Login:      updatedUser.Login,
 		Role:       &updatedUser.Role,
 		ColorTheme: &updatedUser.ColorTheme,
+		CreatedAt:  timestamppb.New(updatedUser.CreatedAt),
+		UpdatedAt:  timestamppb.New(updatedUser.UpdatedAt),
 	}, nil
 }
 
@@ -149,6 +157,8 @@ func (s *Server) Login(ctx context.Context, req *desc.LoginRequest) (*desc.User,
 		Login:      user.Login,
 		Role:       &user.Role,
 		ColorTheme: &user.ColorTheme,
+		CreatedAt:  timestamppb.New(user.CreatedAt),
+		UpdatedAt:  timestamppb.New(user.UpdatedAt),
 	}, nil
 }
 
