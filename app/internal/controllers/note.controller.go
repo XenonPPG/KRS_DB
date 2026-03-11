@@ -3,6 +3,7 @@ package controllers
 import (
 	"DB/internal/initializers"
 	"context"
+	"fmt"
 
 	desc "github.com/XenonPPG/KRS_CONTRACTS/gen/note_v1"
 	"github.com/XenonPPG/KRS_CONTRACTS/models"
@@ -38,12 +39,17 @@ func (s *Server) CreateNote(ctx context.Context, req *desc.CreateNoteRequest) (*
 func (s *Server) GetAllNotes(ctx context.Context, req *desc.GetAllNotesRequest) (*desc.GetAllNotesResponse, error) {
 	var notes []models.Note
 
+	order := "DESC"
+	if req.GetAscendingOrder() {
+		order = "ASC"
+	}
+
 	// results with pagination
 	result := initializers.DB.
 		Where("user_id = ?", req.GetUserID()).
-		Order("updated_at DESC").
-		Limit(int(req.Limit)).
-		Offset(int(req.Offset)).
+		Order(fmt.Sprintf("created_at %s", order)).
+		Limit(int(req.GetLimit())).
+		Offset(int(req.GetOffset())).
 		Find(&notes)
 
 	if result.Error != nil {

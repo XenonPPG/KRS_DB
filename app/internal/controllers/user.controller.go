@@ -4,6 +4,7 @@ import (
 	"DB/internal/initializers"
 	"context"
 	"errors"
+	"fmt"
 
 	desc "github.com/XenonPPG/KRS_CONTRACTS/gen/user_v1"
 	"github.com/XenonPPG/KRS_CONTRACTS/models"
@@ -47,8 +48,17 @@ func (s *Server) CreateUser(ctx context.Context, req *desc.CreateUserRequest) (*
 func (s *Server) GetAllUsers(ctx context.Context, req *desc.GetAllUsersRequest) (*desc.GetAllUsersResponse, error) {
 	var dbUsers []models.User
 
+	order := "DESC"
+	if req.GetAscendingOrder() {
+		order = "ASC"
+	}
+
 	// results with pagination
-	result := initializers.DB.Limit(int(req.Limit)).Offset(int(req.Offset)).Find(&dbUsers)
+	result := initializers.DB.
+		Order(fmt.Sprintf("created_at %s", order)).
+		Limit(int(req.GetLimit())).
+		Offset(int(req.GetOffset())).
+		Find(&dbUsers)
 
 	if result.Error != nil {
 		return nil, status.Errorf(codes.Internal, "failed to fetch users: %v", result.Error)
