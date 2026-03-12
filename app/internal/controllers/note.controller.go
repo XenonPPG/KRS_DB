@@ -47,7 +47,7 @@ func (s *Server) GetAllNotes(ctx context.Context, req *desc.GetAllNotesRequest) 
 	// results with pagination
 	result := initializers.DB.
 		Where("user_id = ?", req.GetUserID()).
-		Order(fmt.Sprintf("created_at %s", order)).
+		Order(fmt.Sprintf("updated_at %s", order)).
 		Limit(int(req.GetLimit())).
 		Offset(int(req.GetOffset())).
 		Find(&notes)
