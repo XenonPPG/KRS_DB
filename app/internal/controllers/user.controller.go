@@ -193,7 +193,12 @@ func (s *Server) UpdatePassword(ctx context.Context, req *desc.UpdatePasswordReq
 	}
 
 	// update
-	if err := initializers.DB.Model(&user).Update("password", req.GetNewPassword()).Error; err != nil {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(req.GetNewPassword()), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to hash password: %v", err)
+	}
+
+	if err = initializers.DB.Model(&user).Update("password", string(bytes)).Error; err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to update password: %v", err)
 	}
 
