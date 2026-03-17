@@ -173,6 +173,11 @@ func (s *Server) Login(ctx context.Context, req *desc.LoginRequest) (*desc.User,
 }
 
 func (s *Server) UpdatePassword(ctx context.Context, req *desc.UpdatePasswordRequest) (*emptypb.Empty, error) {
+	// check if the new password is different
+	if req.GetNewPassword() == req.GetOldPassword() {
+		return nil, status.Error(codes.InvalidArgument, "new password must be different")
+	}
+
 	// get user
 	var user models.User
 	if err := initializers.DB.First(&user, req.GetId()).Error; err != nil {
@@ -182,9 +187,9 @@ func (s *Server) UpdatePassword(ctx context.Context, req *desc.UpdatePasswordReq
 		return nil, err
 	}
 
-	// check if the new password is different
-	if user.Password == req.GetNewPassword() {
-		return nil, status.Error(codes.InvalidArgument, "new password must be different")
+	// check if the old password is correct
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.GetOldPassword())); err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "invalid old password")
 	}
 
 	// update

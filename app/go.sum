@@ -1,7 +1,7 @@
 github.com/BurntSushi/toml v1.2.1 h1:9F2/+DoOYIOksmaJFPw1tGFy1eDnIJXg+UHjuD8lTak=
 github.com/BurntSushi/toml v1.2.1/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
-github.com/XenonPPG/KRS_CONTRACTS v0.0.0-20260311195626-013f443e323d h1:vw/R2OU9RUeoO+9+K8MjaF4sOBqetETx45YSdBFdoIM=
-github.com/XenonPPG/KRS_CONTRACTS v0.0.0-20260311195626-013f443e323d/go.mod h1:wRB/VpxKfaUZjTkOGJ6bRF3kvVMzMCsRD/WUYhA4KAQ=
+github.com/XenonPPG/KRS_CONTRACTS v0.0.0-20260317192726-4e95f8ce7939 h1:ff12CjOebh1MixaYq9AO4+B82FZhD1ps+EEbScpMoHc=
+github.com/XenonPPG/KRS_CONTRACTS v0.0.0-20260317192726-4e95f8ce7939/go.mod h1:wRB/VpxKfaUZjTkOGJ6bRF3kvVMzMCsRD/WUYhA4KAQ=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
