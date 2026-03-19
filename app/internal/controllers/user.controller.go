@@ -55,7 +55,7 @@ func (s *Server) GetAllUsers(ctx context.Context, req *desc.GetAllUsersRequest) 
 
 	// results with pagination
 	result := initializers.DB.
-		Order(fmt.Sprintf("updated_at %s", order)).
+		Order(fmt.Sprintf("id %s", order)).
 		Limit(int(req.GetLimit())).
 		Offset(int(req.GetOffset())).
 		Find(&dbUsers)
