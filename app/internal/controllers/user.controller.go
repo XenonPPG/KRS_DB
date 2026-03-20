@@ -125,14 +125,23 @@ func (s *Server) UpdateUser(ctx context.Context, req *desc.UpdateUserRequest) (*
 	}
 
 	// check if something was updated
-	anythingUpdated := oldUser.Login != updatedUser.Login
-	anythingUpdated = anythingUpdated || oldUser.ColorTheme != &updatedUser.ColorTheme
-	anythingUpdated = anythingUpdated || oldUser.Role != &updatedUser.Role
-	if !anythingUpdated {
+	updateMap := make(map[string]any)
+	if oldUser.GetLogin() != updatedUser.Login {
+		updateMap["login"] = updatedUser.Login
+	}
+	if oldUser.GetRole() != updatedUser.Role {
+		updateMap["role"] = updatedUser.Role
+	}
+	if oldUser.GetColorTheme() != updatedUser.ColorTheme {
+		updateMap["color_theme"] = updatedUser.ColorTheme
+	}
+	if len(updateMap) == 0 {
 		return nil, status.Errorf(codes.InvalidArgument, "nothing to update")
 	}
 
-	result := initializers.DB.Model(&models.User{ID: req.GetId()}).Updates(updatedUser)
+	result := initializers.DB.Model(&models.User{}).
+		Where("id = ?", req.GetId()).
+		Updates(updateMap)
 	if result.Error != nil {
 		return nil, status.Errorf(codes.Internal, "failed to update user: %v", result.Error)
 	}
