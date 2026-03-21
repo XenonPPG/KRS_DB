@@ -126,13 +126,13 @@ func (s *Server) UpdateUser(ctx context.Context, req *desc.UpdateUserRequest) (*
 
 	// check if something was updated
 	updateMap := make(map[string]any)
-	if oldUser.GetLogin() != updatedUser.Login {
+	if req.GetLogin() != "" && oldUser.GetLogin() != updatedUser.Login {
 		updateMap["login"] = updatedUser.Login
 	}
-	if oldUser.GetRole() != updatedUser.Role {
+	if req.Role != nil && oldUser.GetRole() != updatedUser.Role {
 		updateMap["role"] = updatedUser.Role
 	}
-	if oldUser.GetColorTheme() != updatedUser.ColorTheme {
+	if req.ColorTheme != nil && oldUser.GetColorTheme() != updatedUser.ColorTheme {
 		updateMap["color_theme"] = updatedUser.ColorTheme
 	}
 	if len(updateMap) == 0 {
@@ -187,27 +187,45 @@ func (s *Server) UpdatePassword(ctx context.Context, req *desc.UpdatePasswordReq
 		return nil, status.Error(codes.InvalidArgument, "new password must be different")
 	}
 
-	// get user
-	var user models.User
-	if err := initializers.DB.First(&user, req.GetId()).Error; err != nil {
+	// get sender id
+	var sender models.User
+	if err := initializers.DB.First(&sender, req.GetSenderId()).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, status.Errorf(codes.NotFound, "user not found")
+			return nil, status.Errorf(codes.NotFound, "sender not found")
 		}
 		return nil, err
 	}
 
-	// check if the old password is correct
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.GetOldPassword())); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "invalid old password")
+	// get receiver id
+	var receiver models.User
+	if err := initializers.DB.First(&receiver, req.GetReceiverId()).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, status.Errorf(codes.NotFound, "receiver not found")
+		}
+		return nil, err
 	}
 
-	// update
+	if sender.Role != desc.UserRole_ADMIN {
+		// check if the sender is the receiver
+		if sender.ID != receiver.ID {
+			return nil, status.Errorf(codes.PermissionDenied, "sender is not the receiver")
+		}
+
+		// check if the old password is correct
+		if err := bcrypt.CompareHashAndPassword([]byte(receiver.Password), []byte(req.GetOldPassword())); err != nil {
+			return nil, status.Errorf(codes.Unauthenticated, "invalid old password")
+		}
+	} else if receiver.Role == desc.UserRole_ADMIN && sender.ID != receiver.ID {
+		return nil, status.Errorf(codes.PermissionDenied, "cannot change admin password")
+	}
+
+	// update password
 	bytes, err := bcrypt.GenerateFromPassword([]byte(req.GetNewPassword()), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to hash password: %v", err)
 	}
 
-	if err = initializers.DB.Model(&user).Update("password", string(bytes)).Error; err != nil {
+	if err = initializers.DB.Model(&receiver).Update("password", string(bytes)).Error; err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to update password: %v", err)
 	}
 
