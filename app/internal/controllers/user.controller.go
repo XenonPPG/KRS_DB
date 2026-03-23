@@ -205,18 +205,19 @@ func (s *Server) UpdatePassword(ctx context.Context, req *desc.UpdatePasswordReq
 		return nil, err
 	}
 
-	if sender.Role != desc.UserRole_ADMIN {
-		// check if the sender is the receiver
-		if sender.ID != receiver.ID {
-			return nil, status.Errorf(codes.PermissionDenied, "sender is not the receiver")
-		}
-
+	// self -> self:	check old password
+	// user -> user:	permission denied
+	// admin -> admin:	permission denied
+	// admin -> user:	bypass password check
+	if sender.ID == receiver.ID {
 		// check if the old password is correct
 		if err := bcrypt.CompareHashAndPassword([]byte(receiver.Password), []byte(req.GetOldPassword())); err != nil {
 			return nil, status.Errorf(codes.Unauthenticated, "invalid old password")
 		}
-	} else if receiver.Role == desc.UserRole_ADMIN && sender.ID != receiver.ID {
-		return nil, status.Errorf(codes.PermissionDenied, "cannot change admin password")
+	} else if sender.Role != desc.UserRole_ADMIN {
+		return nil, status.Errorf(codes.PermissionDenied, "only admins can change other users' passwords")
+	} else if receiver.Role == desc.UserRole_ADMIN {
+		return nil, status.Errorf(codes.PermissionDenied, "only admins themselves can change their password")
 	}
 
 	// update password
